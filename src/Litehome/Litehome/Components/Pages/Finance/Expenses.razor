@@ -1,0 +1,45 @@
+﻿@page "/finance/expense"
+@using Litehome.Services.Interfaces
+@inject IHomeMemberService HomeMemberService
+@inject IExpenseService ExpenseService
+
+<MudStack Class="flex-grow-1">
+    <MudText Typo="Typo.h4">Monthly Expense Overview</MudText>
+    <MudGrid Class="flex-grow-1">
+        @foreach (var member in HomeMemberService.Members)
+        {
+            <MudItem xs="4">
+                <a href="/finance/expense/@member.Id">
+                    <MudPaper Class="p-4">
+                        <MudStack>
+                            <MudText>@member.Name</MudText>
+                            <MudDivider FlexItem="false" Light="true"/>
+                            <MudText>@ExpenseService.Expenses.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount) €</MudText>
+                        </MudStack>
+                    </MudPaper>
+                </a>
+            </MudItem>
+        }
+        <MudItem xs="4">
+            <a href="/finance/expense/shared">
+                <MudPaper Class="p-4">
+                    <MudStack>
+                        <MudText>Shared</MudText>
+                        <MudDivider FlexItem="false" Light="true"/>
+                        <MudText>@ExpenseService.Expenses.Where(x => x.HomeMember is null).Sum(x => x.MonthlyAmount) €</MudText>
+                    </MudStack>
+                </MudPaper>
+            </a>
+        </MudItem>
+    </MudGrid>
+</MudStack>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await HomeMemberService.LoadMembers();
+        await ExpenseService.LoadExpenses();
+    }
+
+}

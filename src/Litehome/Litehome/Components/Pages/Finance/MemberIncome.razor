@@ -1,0 +1,87 @@
+﻿@page "/finance/income/{Id}"
+@using Lite.Db.Enum
+@using Litehome.Db.Enum
+@using Litehome.Db.Models
+@using Litehome.Services.Interfaces
+@inject IHomeMemberService HomeMemberService
+@inject IIncomeService IncomeService
+
+<MudStack Class="flex-grow-1" Justify="Justify.SpaceBetween">
+    <MudStack>
+        <MudText Typo="Typo.h4">Income Overview for @Member.Name</MudText>
+        <MudDataGrid Items="Incomes" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false">
+            <Columns>
+                <PropertyColumn Property="x => x.Name">Name</PropertyColumn>
+                <PropertyColumn Property="x => x.Amount">Amount</PropertyColumn>
+                <PropertyColumn Property="x => x.Frequency" Title="Frequency">
+                    <EditTemplate>
+                        <MudSelect @bind-Value="context.Item.Frequency" Variant="Variant.Outlined" Label="Frequency">
+                            @foreach (var frequency in Enum.GetValues<Frequency>())
+                            {
+                                <MudSelectItem Value="@frequency">@frequency.ToString()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </EditTemplate>
+                </PropertyColumn>
+            </Columns>
+        </MudDataGrid>
+        <MudStack Row="true" Reverse="true">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="AddNew"/>
+        </MudStack>
+    </MudStack>
+    <MudStack Row="true" Reverse="true">
+        <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
+    </MudStack>
+</MudStack>
+
+@code {
+
+    [Parameter]
+    public required string Id { get; set; }
+
+    private HomeMember Member { get; set; } = null!;
+
+    private List<Income> Incomes { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await HomeMemberService.LoadMembers();
+        await IncomeService.LoadIncomes();
+
+        Member = HomeMemberService.Members.First(x => x.Id == Id);
+        Incomes = IncomeService.Incomes.Where(x => x.HomeMember == Member).ToList();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Save()
+    {
+        IncomeService.UpdateIncomes(Incomes);
+        await IncomeService.SaveIncomes();
+    }
+
+    private async Task AddNew()
+    {
+        Incomes.Add(new Income()
+        {
+            Name = "Please enter name",
+            HomeMemberId = Member.Id,
+            Amount = 0m,
+            Frequency = Frequency.Monthly,
+            OperationType = Operation.Created,
+        });
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Delete(Income income)
+    {
+        if (income.OperationType is Operation.Created)
+            Incomes.Remove(income);
+
+        else
+            income.OperationType = Operation.Removed;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+}

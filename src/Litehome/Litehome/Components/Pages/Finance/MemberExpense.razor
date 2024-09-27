@@ -1,0 +1,106 @@
+﻿@page "/finance/expense/{Id}"
+@using Lite.Db.Enum
+@using Litehome.Db.Enum
+@using Litehome.Db.Models
+@using Litehome.Services.Interfaces
+
+@inject IHomeMemberService HomeMemberService
+@inject IExpenseService ExpenseService
+
+<MudStack Class="flex-grow-1" Justify="Justify.SpaceBetween">
+    <MudStack>
+        <MudText Typo="Typo.h4">Expense Overview for @(Member?.Name ?? "Shared Account")</MudText>
+        <MudDataGrid Items="Expenses" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false">
+            <Columns>
+                <PropertyColumn Property="x => x.Name">Name</PropertyColumn>
+                <PropertyColumn Property="x => x.Amount">Amount</PropertyColumn>
+                <PropertyColumn Property="x => x.Frequency" Title="Frequency">
+                    <EditTemplate>
+                        <MudSelect @bind-Value="context.Item.Frequency" Variant="Variant.Outlined" Label="Frequency">
+                            @foreach (var frequency in Enum.GetValues<Frequency>())
+                            {
+                                <MudSelectItem Value="@frequency">@frequency.ToString()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </EditTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.IsSavings" Title="Savings Expense?">
+                    <EditTemplate>
+                        <MudCheckBox T="bool" @bind-Value="context.Item.IsSavings" Label="Savings Expense?"/>
+                    </EditTemplate>
+                </PropertyColumn>
+                <TemplateColumn>
+                    <CellTemplate>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" @onclick="() => Delete(context.Item!)">Delete</MudButton>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+        <MudStack Row="true" Reverse="true">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="AddNew"/>
+        </MudStack>
+    </MudStack>
+    <MudStack Row="true" Reverse="true">
+        <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
+    </MudStack>
+</MudStack>
+
+@code {
+
+    [Parameter]
+    public required string Id { get; set; }
+    
+    private HomeMember? Member { get; set; }
+    
+    private List<Expense> Expenses { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await HomeMemberService.LoadMembers();
+        await ExpenseService.LoadExpenses();
+
+        if (Id != "shared")
+        {
+            Member = HomeMemberService.Members.First(x => x.Id == Id);
+            Expenses = ExpenseService.Expenses.Where(x => x.HomeMember == Member).ToList();
+        }
+        else
+        {
+            Expenses = ExpenseService.Expenses.Where(x => x.HomeMember is null).ToList();
+        }
+        
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task Save()
+    {
+        ExpenseService.UpdateExpenses(Expenses);
+        await ExpenseService.SaveExpenses();
+    }
+
+    private async Task AddNew()
+    {
+        Expenses.Add(new Expense()
+        {
+            Name = "Please enter name",
+            HomeMemberId = Member?.Id,
+            Amount = 0m,
+            Frequency = Frequency.Monthly,
+            OperationType = Operation.Created,
+        });
+
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task Delete(Expense expense)
+    {
+        if (expense.OperationType is Operation.Created)
+            Expenses.Remove(expense);
+
+        else
+            expense.OperationType = Operation.Removed;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+}

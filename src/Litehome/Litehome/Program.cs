@@ -23,7 +23,12 @@ builder.Services.AddDbContextFactory<LitehomeDbContext>(options => options.UseSq
 builder.Services.AddDbContext<LitehomeDbContext>();
 
 builder.Services.AddScoped<IHomeMemberRepository, HomeMemberRepository>();
+builder.Services.AddScoped<IIncomeRepository, IncomeRepository>();
+builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
+
 builder.Services.AddScoped<IHomeMemberService, HomeMemberService>();
+builder.Services.AddScoped<IIncomeService, IncomeService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
 var app = builder.Build();
 
