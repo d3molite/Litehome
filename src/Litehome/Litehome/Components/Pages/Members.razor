@@ -1,0 +1,49 @@
+﻿@page "/Members"
+@using Lite.Db.Enum
+@using Litehome.Db.Models
+@using Litehome.Services.Interfaces
+@inject IHomeMemberService HomeMemberService
+
+<MudStack Class="flex-grow-1" Justify="Justify.SpaceBetween">
+    <MudStack>
+        <MudText Typo="Typo.h4">Add and Edit Home Members</MudText>
+        <MudDataGrid Items="@HomeMemberService.Members" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" ReadOnly="false">
+            <Columns>
+                <PropertyColumn Property="x => x.Name" Editable="true">Name</PropertyColumn>
+            </Columns>
+        </MudDataGrid>
+        <MudStack Row="true" Reverse="true">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="AddMember"></MudIconButton>
+        </MudStack>
+    </MudStack>
+    <MudStack Row="true" Reverse="true">
+        <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
+    </MudStack>
+</MudStack>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await HomeMemberService.LoadMembers();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AddMember()
+    {
+        HomeMemberService.Members.Add(new HomeMember
+        {
+            Name = "Please enter a name",
+            OperationType = Operation.Created,
+        });
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Save()
+    {
+        await HomeMemberService.SaveMembers();
+        await InvokeAsync(StateHasChanged);
+    }
+    
+}

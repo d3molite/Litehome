@@ -1,0 +1,6 @@
+﻿services:
+  litehome:
+    image: litehome
+    build:
+      context: .
+      dockerfile: Litehome/Dockerfile
