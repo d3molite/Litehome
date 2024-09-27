@@ -1,0 +1,17 @@
+﻿<MudItem xs="@Xs">
+    <MudPaper Class="p-2 flex-grow-1">
+        <MudStack Class="flex-grow-1" AlignItems="AlignItems.Center">
+            <MudText>@Text</MudText>
+        </MudStack>
+    </MudPaper>
+</MudItem>
+
+@code {
+
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter]
+    public int Xs { get; set; } = 2;
+
+}
