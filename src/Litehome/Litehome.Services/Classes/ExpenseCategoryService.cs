@@ -30,7 +30,7 @@ public class ExpenseCategoryService(IExpenseCategoryRepository expenseCategoryRe
 			if (existing is null)
 			{
 				ExpenseCategories.Add(category);
-				return;
+				continue;
 			}
 
 			existing.OperationType = Operation.Updated;

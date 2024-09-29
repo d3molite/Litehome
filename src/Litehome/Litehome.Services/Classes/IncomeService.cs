@@ -34,7 +34,7 @@ public class IncomeService(IIncomeRepository incomeRepository, IHomeMemberServic
 			if (existing is null)
 			{
 				Incomes.Add(income);
-				return;
+				continue;
 			}
 
 			existing.OperationType = Operation.Updated;

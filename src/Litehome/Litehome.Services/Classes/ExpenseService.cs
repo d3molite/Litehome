@@ -39,7 +39,7 @@ public class ExpenseService(
 			if (existing is null)
 			{
 				Expenses.Add(expense);
-				return;
+				continue;
 			}
 
 			existing.OperationType = Operation.Updated;
