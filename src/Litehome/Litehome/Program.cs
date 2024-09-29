@@ -25,10 +25,12 @@ builder.Services.AddDbContext<LitehomeDbContext>();
 builder.Services.AddScoped<IHomeMemberRepository, HomeMemberRepository>();
 builder.Services.AddScoped<IIncomeRepository, IncomeRepository>();
 builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
+builder.Services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
 
 builder.Services.AddScoped<IHomeMemberService, HomeMemberService>();
 builder.Services.AddScoped<IIncomeService, IncomeService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
 
 var app = builder.Build();
 

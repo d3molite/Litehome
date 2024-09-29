@@ -1,4 +1,4 @@
-﻿using Lite.Db.Enum;
+﻿using Demolite.Db.Enum;
 using Litehome.Db.Interfaces;
 using Litehome.Db.Models;
 using Litehome.Services.Interfaces;
@@ -41,4 +41,18 @@ public class IncomeService(IIncomeRepository incomeRepository, IHomeMemberServic
 			existing.Amount = income.Amount;
 		}
 	}
+	
+	public decimal MonthlyMemberIncome(HomeMember member)
+		=> Incomes.Where(x => x.HomeMemberId == member.Id).Sum(x => x.MonthlyAmount);
+	
+	public decimal TotalMonthlyIncome => Incomes.Sum(x => x.MonthlyAmount);
+
+	public decimal MemberIncomePercentage(HomeMember member)
+	{
+		if (TotalMonthlyIncome > 0)
+			return MonthlyMemberIncome(member) / TotalMonthlyIncome;
+
+		return 0;
+	}
+	
 }

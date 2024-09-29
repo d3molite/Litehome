@@ -15,8 +15,6 @@ RUN dotnet dev-certs https --trust
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Litehome/Litehome.csproj", "Litehome/"]
-COPY ["Litehome/Litehome.Db.csproj", "Litehome.Db/"]
-COPY ["Litehome/Litehome.Services.csproj", "Litehome.Services/"]
 
 RUN dotnet restore "Litehome/Litehome.csproj"
 COPY . .

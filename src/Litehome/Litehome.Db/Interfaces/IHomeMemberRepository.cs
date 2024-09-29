@@ -1,9 +1,6 @@
-﻿using Lite.Db.Interfaces;
+﻿using Demolite.Db.Interfaces;
 using Litehome.Db.Models;
 
 namespace Litehome.Db.Interfaces;
 
-public interface IHomeMemberRepository : IAbstractBaseRepository<HomeMember>
-{
-	
-}
+public interface IHomeMemberRepository : IAbstractBaseRepository<HomeMember>;

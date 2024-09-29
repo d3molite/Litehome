@@ -26,6 +26,7 @@
 
 
   <ItemGroup>
+    <Folder Include="Components\Pages\Config\" />
     <Folder Include="db\" />
   </ItemGroup>
 
@@ -33,5 +34,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Litehome.Db\Litehome.Db.csproj" />
     <ProjectReference Include="..\Litehome.Services\Litehome.Services.csproj" />
+    <ProjectReference Include="..\Litehome.Util\Litehome.Util.csproj" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 ﻿@page "/finance/income/{Id}"
-@using Lite.Db.Enum
+@using Demolite.Db.Enum
 @using Litehome.Db.Enum
 @using Litehome.Db.Models
 @using Litehome.Services.Interfaces
@@ -11,8 +11,8 @@
         <MudText Typo="Typo.h4">Income Overview for @Member.Name</MudText>
         <MudDataGrid Items="Incomes" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false">
             <Columns>
-                <PropertyColumn Property="x => x.Name">Name</PropertyColumn>
-                <PropertyColumn Property="x => x.Amount">Amount</PropertyColumn>
+                <PropertyColumn Property="x => x.Name" Title="Name"/>
+                <PropertyColumn Property="x => x.Amount" Title="Amount"/>
                 <PropertyColumn Property="x => x.Frequency" Title="Frequency">
                     <EditTemplate>
                         <MudSelect @bind-Value="context.Item.Frequency" Variant="Variant.Outlined" Label="Frequency">
@@ -57,6 +57,7 @@
     {
         IncomeService.UpdateIncomes(Incomes);
         await IncomeService.SaveIncomes();
+        await OnInitializedAsync();
     }
 
     private async Task AddNew()

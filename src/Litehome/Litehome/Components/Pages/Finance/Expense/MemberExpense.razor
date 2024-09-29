@@ -1,19 +1,20 @@
 ﻿@page "/finance/expense/{Id}"
-@using Lite.Db.Enum
+@using Demolite.Db.Enum
 @using Litehome.Db.Enum
 @using Litehome.Db.Models
 @using Litehome.Services.Interfaces
 
 @inject IHomeMemberService HomeMemberService
 @inject IExpenseService ExpenseService
+@inject IExpenseCategoryService ExpenseCategoryService
 
 <MudStack Class="flex-grow-1" Justify="Justify.SpaceBetween">
     <MudStack>
         <MudText Typo="Typo.h4">Expense Overview for @(Member?.Name ?? "Shared Account")</MudText>
         <MudDataGrid Items="Expenses" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false">
             <Columns>
-                <PropertyColumn Property="x => x.Name">Name</PropertyColumn>
-                <PropertyColumn Property="x => x.Amount">Amount</PropertyColumn>
+                <PropertyColumn Property="x => x.Name" Title="Name"/>
+                <PropertyColumn Property="x => x.Amount" Title="Amount"/>
                 <PropertyColumn Property="x => x.Frequency" Title="Frequency">
                     <EditTemplate>
                         <MudSelect @bind-Value="context.Item.Frequency" Variant="Variant.Outlined" Label="Frequency">
@@ -24,6 +25,31 @@
                         </MudSelect>
                     </EditTemplate>
                 </PropertyColumn>
+                <TemplateColumn Title="Category">
+                    <EditTemplate>
+                        <MudSelect @bind-Value="context.Item.ExpenseCategory" Variant="Variant.Outlined" Label="Category">
+                            @foreach (var expenseCategory in ExpenseCategoryService.ExpenseCategories)
+                            {
+                                <MudSelectItem Value="expenseCategory">@expenseCategory.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </EditTemplate>
+                    <CellTemplate>
+                        @context.Item.ExpenseCategory?.Name
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Booking Date">
+                    <EditTemplate>
+                        @if (context.Item.HasDate)
+                        {
+                            <MudDatePicker Variant="Variant.Outlined" Label="Booking Date" @bind-Date="@context.Item.Date"></MudDatePicker>
+                        }
+                        
+                    </EditTemplate>
+                    <CellTemplate>
+                        @( @context.Item.HasDate ? context.Item.Date?.ToString("dd.MM.yyyy") : "Expense is Monthly")
+                    </CellTemplate>
+                </TemplateColumn>
                 <PropertyColumn Property="x => x.IsSavings" Title="Savings Expense?">
                     <EditTemplate>
                         <MudCheckBox T="bool" @bind-Value="context.Item.IsSavings" Label="Savings Expense?"/>
@@ -51,12 +77,13 @@
     public required string Id { get; set; }
     
     private HomeMember? Member { get; set; }
-    
-    private List<Expense> Expenses { get; set; }
+
+    private List<Expense> Expenses { get; set; } = [];
     
     protected override async Task OnInitializedAsync()
     {
         await HomeMemberService.LoadMembers();
+        await ExpenseCategoryService.LoadExpenseCategories();
         await ExpenseService.LoadExpenses();
 
         if (Id != "shared")
@@ -76,6 +103,7 @@
     {
         ExpenseService.UpdateExpenses(Expenses);
         await ExpenseService.SaveExpenses();
+        await OnInitializedAsync();
     }
 
     private async Task AddNew()

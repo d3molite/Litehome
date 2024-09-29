@@ -1,5 +1,5 @@
-﻿@page "/Members"
-@using Lite.Db.Enum
+﻿@page "/config/members"
+@using Demolite.Db.Enum
 @using Litehome.Db.Models
 @using Litehome.Services.Interfaces
 @inject IHomeMemberService HomeMemberService
@@ -9,7 +9,7 @@
         <MudText Typo="Typo.h4">Add and Edit Home Members</MudText>
         <MudDataGrid Items="@HomeMemberService.Members" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" ReadOnly="false">
             <Columns>
-                <PropertyColumn Property="x => x.Name" Editable="true">Name</PropertyColumn>
+                <PropertyColumn Property="x => x.Name" Editable="true" Title="Name"/>
             </Columns>
         </MudDataGrid>
         <MudStack Row="true" Reverse="true">

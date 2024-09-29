@@ -15,7 +15,7 @@
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu />
     </MudDrawer>
-    <MudMainContent Class="mt-16 pa-4" Style="height: calc(100vh - 4rem) !important">
+    <MudMainContent Class="mt-16 pa-4 overflow-hidden" Style="height: calc(100vh - 4rem) !important; max-height: calc(100vh - 4rem) !important">
         <div class="d-flex flex-column h-100 w-100">
             @Body
         </div>

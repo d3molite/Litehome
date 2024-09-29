@@ -1,0 +1,163 @@
+﻿@page "/finance/dashboard"
+@using Litehome.Db.Models
+@using Litehome.Services.Interfaces
+@using Litehome.Components.Items
+
+@inject IHomeMemberService HomeMemberService
+@inject IIncomeService IncomeService
+@inject IExpenseService ExpenseService
+
+<MudStack Class="flex-grow-1">
+    <MudText Typo="Typo.h4">Monthly Finance Dashboard</MudText>
+    <MudStack Row="true" Class="flex-grow-1">
+        <MudStack Class="flex-grow-1">
+            <MudGrid>
+                <MudItem xs="4">
+                </MudItem>
+                @foreach (var member in HomeMemberService.Members)
+                {
+                    <MudDashboardBox Text="@member.Name"/>
+                }
+            </MudGrid>
+            <MudGrid>
+                <MudDashboardBox Text="Monthly Income"/>
+                @foreach (var member in HomeMemberService.Members)
+                {
+                    <MudDashboardBox Text="@FormatCurrency(IncomeService.MonthlyMemberIncome(member))"/>
+                }
+            </MudGrid>
+            <MudGrid>
+                <MudDashboardBox Text="Total Income"/>
+                <MudDashboardBox Xs="8" Text="@FormatCurrency(IncomeService.TotalMonthlyIncome)"/>
+            </MudGrid>
+            <MudGrid>
+                <MudDashboardBox Text="Percentage"/>
+                @foreach (var member in HomeMemberService.Members)
+                {
+                    <MudDashboardBox Text="@($"{IncomeService.MemberIncomePercentage(member):P}")"/>
+                }
+            </MudGrid>
+            <MudDivider Class="flex-grow-0" Light="true"></MudDivider>
+            <MudGrid>
+                <MudDashboardBox Text="Monthly Shared Expenses"/>
+                <MudDashboardBox Xs="8" Text="@FormatCurrency(ExpenseService.TotalSharedExpenses)"/>
+            </MudGrid>
+            <MudGrid>
+                <MudDashboardBox Text="Monthly Expense Budget"/>
+                <MudDashboardBox Xs="8" Text="@($"{FormatCurrency(TotalWeightedMonthly())} (+{FormatCurrency(TotalMonthlyRemaining())})")"/>
+            </MudGrid>
+            <MudGrid>
+                <MudDashboardBox Text="Weighted Monthly"/>
+                @foreach (var member in HomeMemberService.Members)
+                {
+                    <MudDashboardBox Text="@FormatCurrency(PercentageWeightedMonthly(member))"/>
+                }
+            </MudGrid>
+            <MudGrid>
+                <MudDashboardBox Text="Monthly Spending"/>
+                @foreach (var member in HomeMemberService.Members)
+                {
+                    <MudDashboardBox Text="@FormatCurrency(ExpenseService.MemberSpending(member))"/>
+                }
+            </MudGrid>
+            <MudGrid>
+                <MudDashboardBox Text="Monthly Saving"/>
+                @foreach (var member in HomeMemberService.Members)
+                {
+                    <MudDashboardBox Text="@FormatCurrency(ExpenseService.MemberSpending(member, true))"/>
+                }
+            </MudGrid>
+            <MudDivider Class="flex-grow-0" Light="true"/>
+            <MudGrid>
+                <MudDashboardBox Text="Remaining"/>
+                @foreach (var member in HomeMemberService.Members)
+                {
+                    <MudDashboardBox Text="@FormatCurrency(GetMemberRemaining(member))"/>
+                }
+            </MudGrid>
+            <MudGrid>
+                <MudDashboardBox Text="Percentage"/>
+                @foreach (var member in HomeMemberService.Members)
+                {
+                    <MudDashboardBox Text="@GetMemberRemainingPercentage(member)"/>
+                }
+            </MudGrid>
+            <MudDivider Class="flex-grow-0" Light="true"/>
+            <MudGrid>
+                <MudDashboardBox Text="Chart View"/>
+                @foreach (var member in HomeMemberService.Members)
+                {
+                    <MudItem xs="4">
+                        <MudPaper Class="h-50" >
+                            <MudChart Class="h-100" ChartType="ChartType.Donut" InputData="GetMemberChartData(member)" InputLabels="@Labels"/>
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudStack>
+    </MudStack>
+
+</MudStack>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await HomeMemberService.LoadMembers();
+        await IncomeService.LoadIncomes();
+        await ExpenseService.LoadExpenses();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private decimal TotalWeightedMonthly()
+        => HomeMemberService.Members.Sum(PercentageWeightedMonthly);
+    
+    private decimal TotalMonthlyRemaining()
+        => TotalWeightedMonthly() - ExpenseService.TotalSharedExpenses;
+
+    private decimal PercentageWeightedMonthly(HomeMember member)
+    {
+        var percentage = IncomeService.MemberIncomePercentage(member);
+        var amount = ExpenseService.PercentageWeightedMonthly(percentage);
+
+        const int roundTo = 50;
+
+        return Math.Ceiling(amount / roundTo) * roundTo;
+    }
+
+    private decimal GetMemberRemaining(HomeMember member)
+    {
+        var income = IncomeService.Incomes.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount);
+        var expenses = ExpenseService.Expenses.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount);
+        var weighted = PercentageWeightedMonthly(member);
+
+        return income - expenses - weighted;
+    }
+
+    private string GetMemberRemainingPercentage(HomeMember member)
+    {
+        var income = IncomeService.Incomes.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount);
+        return income > 0 ? $"{GetMemberRemaining(member) / income:P}" : $"{0m:P}";
+    }
+
+    private static string FormatCurrency(decimal input)
+        => $"{input:F2} €";
+
+    private double[] GetMemberChartData(HomeMember member)
+    {
+        return
+        [
+            (double)PercentageWeightedMonthly(member),
+            (double)ExpenseService.MemberSpending(member),
+            (double)ExpenseService.MemberSpending(member, true),
+            (double)GetMemberRemaining(member),
+        ];
+    }
+
+    private static string[] Labels =>
+    [
+        "Budget Expense", "Solo Spending", "Solo Savings", "Remaining"
+    ];
+
+}

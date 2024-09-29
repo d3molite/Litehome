@@ -11,4 +11,11 @@ public interface IExpenseService
 	public Task SaveExpenses();
 	
 	public void UpdateExpenses(IEnumerable<Expense> expenses);
+	
+	public decimal TotalSharedExpenses { get; }
+
+	public decimal PercentageWeightedMonthly(decimal percentage);
+	
+	public decimal MemberSpending(HomeMember member, bool isSavings = false);
+
 }

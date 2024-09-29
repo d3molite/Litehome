@@ -1,0 +1,131 @@
+﻿@page "/finance/charts"
+@using Litehome.Db.Enum
+@using Litehome.Db.Models
+@using Litehome.Services.Interfaces
+
+@inject IHomeMemberService MemberService
+@inject IExpenseCategoryService ExpenseCategoryService
+@inject IExpenseService ExpenseService
+
+<MudStack Class="flex-grow-1 overflow-scroll">
+    <MudPaper Class="p-3">
+        <MudStack >
+            <MudText Typo="Typo.h4">Expenses Per Month</MudText>
+            <MudChart Style="height: 60vh;" ChartType="ChartType.Bar" ChartSeries="ExpensesPerMonth" XAxisLabels="ExpensePerMonthLabels" Height="65vh" Width="100%"/>
+        </MudStack>
+    </MudPaper>
+    <MudPaper Class="p-3">
+        <MudStack >
+            <MudText Typo="Typo.h4">Expenses Per Category</MudText>
+            <MudChart Style="height: 60vh;" ChartType="ChartType.Bar" ChartSeries="ExpensesPerCategory" XAxisLabels="ExpensesPerCategoryLabels" Height="65vh" Width="100%"/>
+        </MudStack>
+    </MudPaper>
+</MudStack>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await MemberService.LoadMembers();
+        await ExpenseCategoryService.LoadExpenseCategories();
+        await ExpenseService.LoadExpenses();
+        SetupExpensesPerMonth();
+        SetupExpensesPerCategory();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private List<ChartSeries> ExpensesPerMonth { get; set; } = [];
+
+    private List<ChartSeries> ExpensesPerCategory { get; set; } = [];
+
+    private string[] ExpensesPerCategoryLabels { get; set; } = [];
+
+    private void SetupExpensesPerCategory()
+    {
+        var categories = ExpenseCategoryService.ExpenseCategories;
+
+        var grouped = ExpenseService.Expenses.GroupBy(x => x.HomeMember);
+
+        ExpensesPerCategoryLabels = categories.Select(x => x.Name).ToArray();
+
+        foreach (var userGroup in grouped)
+        {
+            ExpensesPerCategory.Add(new ChartSeries()
+            {
+                Name = userGroup.Key?.Name ?? "Shared",
+                Data = userGroup.GroupBy(x => x.ExpenseCategory).Select(data => data.Sum(x => x.MonthlyAmount)).Select(x => (double)x).ToArray(),
+            });
+        }
+    }
+
+    private void SetupExpensesPerMonth()
+    {
+        ExpensesPerMonth.Add(
+            new ChartSeries
+            {
+                Name = "Shared",
+                Data =
+                [
+                    0,0,0,0,0,0,0,0,0,0,0,0,
+                ],
+            }
+        );
+        
+        var sharedExpenses = ExpenseService.Expenses.Where(x => x.IsShared);
+
+        foreach (var sharedExpense in sharedExpenses)
+        {
+            AddExpenseToCategories("Shared", sharedExpense);
+        }
+
+        foreach (var member in MemberService.Members)
+        {
+            ExpensesPerMonth.Add(new ChartSeries()
+            {
+                Name = member.Name,
+                Data =
+                [
+                    0,0,0,0,0,0,0,0,0,0,0,0,
+                ],
+            });
+
+            var expenses = ExpenseService.Expenses.Where(x => x.HomeMember == member);
+
+            foreach (var expense in expenses)
+            {
+                AddExpenseToCategories(member.Name, expense);
+            }
+        }
+    }
+    
+    private void AddExpenseToCategories(string name, Expense expense)
+    {
+        switch (expense.Frequency)
+        {
+            case Frequency.Monthly or Frequency.Weekly or Frequency.Daily:
+            {
+                for (var i = 0; i <= 11; i++)
+                {
+                    ExpensesPerMonth.First(x => x.Name == name).Data[i] += (double)expense.MonthlyAmount;
+                }
+
+                break;
+            }
+
+            case Frequency.Quarterly or Frequency.SemiAnnually or Frequency.Annually:
+            {
+                foreach (var date in expense.BookingDates)
+                {
+                    ExpensesPerMonth.First(x => x.Name == name).Data[date.Month - 1] += (double)expense.Amount;
+                }
+
+                break;
+            }
+        }
+    }
+
+    private static string[] ExpensePerMonthLabels => ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."];
+
+    
+
+}

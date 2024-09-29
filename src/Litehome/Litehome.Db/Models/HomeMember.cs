@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Lite.Db.Models;
+using Demolite.Db.Models;
 
 namespace Litehome.Db.Models;
 

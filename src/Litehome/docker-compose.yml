@@ -1,6 +1,15 @@
-﻿services:
-  litehome:
-    image: litehome
+services:
+  connect:
+    image: hub.demolite.de/demoreg/litehome
+    container_name: litehome
+    restart: always
+    network_mode: host
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Litehome/Dockerfile
+      args:
+        - CERT_PASS=${cert_pass}
+    volumes:
+      - "./db/:/app/db/"    

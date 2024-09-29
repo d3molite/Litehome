@@ -1,5 +1,6 @@
 ﻿@page "/finance/expense"
 @using Litehome.Services.Interfaces
+@using Litehome.Util.Format
 @inject IHomeMemberService HomeMemberService
 @inject IExpenseService ExpenseService
 
@@ -14,9 +15,9 @@
                         <MudStack>
                             <MudText>@member.Name</MudText>
                             <MudDivider FlexItem="false" Light="true"/>
-                            <MudText>General: @ExpenseService.Expenses.Where(x => x.HomeMember == member && !x.IsSavings).Sum(x => x.MonthlyAmount) €</MudText>
-                            <MudText>Savings: @ExpenseService.Expenses.Where(x => x.HomeMember == member && x.IsSavings).Sum(x => x.MonthlyAmount) €</MudText>
-                            <MudText>Total: @ExpenseService.Expenses.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount) €</MudText>
+                            <MudText>General: @ExpenseService.Expenses.Where(x => x.HomeMember == member && !x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                            <MudText>Savings: @ExpenseService.Expenses.Where(x => x.HomeMember == member && x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                            <MudText>Total: @ExpenseService.Expenses.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
                         </MudStack>
                     </MudPaper>
                 </a>
@@ -28,9 +29,9 @@
                     <MudStack>
                         <MudText>Shared</MudText>
                         <MudDivider FlexItem="false" Light="true"/>
-                        <MudText>General: @ExpenseService.Expenses.Where(x => x.HomeMember is null && !x.IsSavings).Sum(x => x.MonthlyAmount) €</MudText>
-                        <MudText>Savings: @ExpenseService.Expenses.Where(x => x.HomeMember  is null && x.IsSavings).Sum(x => x.MonthlyAmount) €</MudText>
-                        <MudText>Total: @ExpenseService.Expenses.Where(x => x.HomeMember is null).Sum(x => x.MonthlyAmount) €</MudText>
+                        <MudText>General: @ExpenseService.Expenses.Where(x => x.HomeMember is null && !x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                        <MudText>Savings: @ExpenseService.Expenses.Where(x => x.HomeMember  is null && x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                        <MudText>Total: @ExpenseService.Expenses.Where(x => x.HomeMember is null).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
                     </MudStack>
                 </MudPaper>
             </a>
@@ -45,5 +46,4 @@
         await HomeMemberService.LoadMembers();
         await ExpenseService.LoadExpenses();
     }
-
 }

@@ -1,0 +1,52 @@
+﻿@page "/config/expenseCategories"
+@using Demolite.Db.Enum
+@using Litehome.Db.Models
+@using Litehome.Services.Interfaces
+@inject IExpenseCategoryService ExpenseCategoryService
+
+<MudStack Class="flex-grow-1" Justify="Justify.SpaceBetween">
+    <MudStack>
+        <MudText Typo="Typo.h4">Edit Expense Categories</MudText>
+        <MudDataGrid Items="@Categories" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" ReadOnly="false">
+            <Columns>
+                <PropertyColumn Property="x => x.Name" Title="Name" Editable="true"/>
+            </Columns>
+        </MudDataGrid>
+        <MudStack Row="true" Reverse="true">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="AddCategory"></MudIconButton>
+        </MudStack>
+    </MudStack>
+    <MudStack Row="true" Reverse="true">
+        <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
+    </MudStack>
+</MudStack>
+
+@code {
+
+    private List<ExpenseCategory> Categories { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ExpenseCategoryService.LoadExpenseCategories();
+        Categories = ExpenseCategoryService.ExpenseCategories;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AddCategory()
+    {
+        ExpenseCategoryService.ExpenseCategories.Add(new ExpenseCategory
+        {
+            Name = "Please enter a Name",
+            OperationType = Operation.Created,
+        });
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Save()
+    {
+        ExpenseCategoryService.UpdateExpenseCategories(Categories);
+        await ExpenseCategoryService.SaveExpenseCategories();
+        await OnInitializedAsync();
+    }
+}
