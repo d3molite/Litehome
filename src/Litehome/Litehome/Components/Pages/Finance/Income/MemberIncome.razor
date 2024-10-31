@@ -6,10 +6,15 @@
 @inject IHomeMemberService HomeMemberService
 @inject IIncomeService IncomeService
 
-<MudStack Class="flex-grow-1" Justify="Justify.SpaceBetween">
-    <MudStack>
-        <MudText Typo="Typo.h4">Income Overview for @Member.Name</MudText>
-        <MudDataGrid Items="Incomes" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false">
+<MudTablePage>
+    <TitleContent>
+        <MudText Typo="Typo.h5">Income Overview for @Member.Name</MudText>
+    </TitleContent>
+    <TableContent>
+        <MudDataGrid
+            Style="display: flex; flex-direction: column; height: 100%;"
+            FixedHeader="true"
+            Items="Incomes" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false">
             <Columns>
                 <PropertyColumn Property="x => x.Name" Title="Name"/>
                 <PropertyColumn Property="x => x.Amount" Title="Amount"/>
@@ -25,14 +30,14 @@
                 </PropertyColumn>
             </Columns>
         </MudDataGrid>
-        <MudStack Row="true" Reverse="true">
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="AddNew"/>
-        </MudStack>
-    </MudStack>
-    <MudStack Row="true" Reverse="true">
+    </TableContent>
+    <TableActionContent>
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="AddNew"/>
+    </TableActionContent>
+    <SiteActionContent>
         <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
-    </MudStack>
-</MudStack>
+    </SiteActionContent>
+</MudTablePage>
 
 @code {
 
@@ -49,7 +54,11 @@
         await IncomeService.LoadIncomes();
 
         Member = HomeMemberService.Members.First(x => x.Id == Id);
-        Incomes = IncomeService.Incomes.Where(x => x.HomeMember == Member).ToList();
+
+        Incomes = IncomeService
+                  .Incomes.Where(x => x.HomeMember == Member)
+                  .ToList();
+
         await InvokeAsync(StateHasChanged);
     }
 
@@ -62,14 +71,16 @@
 
     private async Task AddNew()
     {
-        Incomes.Add(new Income()
-        {
-            Name = "Please enter name",
-            HomeMemberId = Member.Id,
-            Amount = 0m,
-            Frequency = Frequency.Monthly,
-            OperationType = Operation.Created,
-        });
+        Incomes.Add(
+            new Income()
+            {
+                Name = "Please enter name",
+                HomeMemberId = Member.Id,
+                Amount = 0m,
+                Frequency = Frequency.Monthly,
+                OperationType = Operation.Created,
+            }
+        );
 
         await InvokeAsync(StateHasChanged);
     }

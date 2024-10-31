@@ -4,7 +4,7 @@
 @inject IHomeMemberService HomeMemberService
 @inject IExpenseService ExpenseService
 
-<MudStack Class="flex-grow-1">
+<MudStack Class="flex-grow-1 mh-100">
     <MudText Typo="Typo.h4">Monthly Expense Overview</MudText>
     <MudGrid Class="flex-grow-1">
         @foreach (var member in HomeMemberService.Members)

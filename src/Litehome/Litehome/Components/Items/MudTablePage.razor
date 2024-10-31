@@ -1,0 +1,30 @@
+﻿<MudStack Class="flex-grow-1 mh-100 overflow-hidden" Justify="Justify.SpaceBetween">
+    <MudStack Style="height: 95% !important" Class="overflow-hidden">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            @TitleContent
+            @TableActionContent
+        </MudStack>
+        <MudStack Style="max-height: 90% !important">
+            @TableContent
+        </MudStack>
+    </MudStack>
+    <MudStack Row="true" Reverse="true" Style="height: 5% !important">
+        @SiteActionContent
+    </MudStack>
+</MudStack>
+
+@code {
+
+    [Parameter]
+    public RenderFragment TitleContent { get; set; }
+    
+    [Parameter]
+    public RenderFragment TableContent { get; set; }
+    
+    [Parameter]
+    public RenderFragment TableActionContent { get; set; }
+
+    [Parameter]
+    public RenderFragment SiteActionContent { get; set; }
+    
+}
