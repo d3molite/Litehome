@@ -3,7 +3,7 @@
 **/.idea/**
 
 *.env
-*.db
+home.db
 *.db-shm
 *.db-wal
-src/Litehome/Litehome.sln.DotSettings.user
+*.DotSettings.user
