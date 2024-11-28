@@ -39,6 +39,12 @@
     </TableActionContent>
     <SiteActionContent>
         <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
+        @if (HasUnsavedChanges)
+        {
+            <MudAlert Severity="Severity.Error">
+                You have unsaved changes!
+            </MudAlert>
+        }
     </SiteActionContent>
 </MudTablePage>
 
@@ -57,8 +63,8 @@
         Member = HomeMemberService.Members.First(x => x.Id == Id);
 
         Items = IncomeService
-                  .Incomes.Where(x => x.HomeMember == Member)
-                  .ToList();
+                .Incomes.Where(x => x.HomeMember == Member)
+                .ToList();
 
         CheckForUnsavedChanges();
         await InvokeAsync(StateHasChanged);
@@ -68,17 +74,16 @@
     {
         IncomeService.UpdateIncomes(Items);
         var result = await IncomeService.SaveIncomes();
-        
+
         if (result)
         {
             SaveSuccess();
             await OnInitializedAsync();
         }
-            
+
         else
             SaveError();
     }
-    
 
     protected override Income CreateItem()
     {

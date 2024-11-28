@@ -13,12 +13,19 @@ public class ExpenseCategoryService(IExpenseCategoryRepository expenseCategoryRe
 	{
 		ExpenseCategories.Clear();
 		ExpenseCategories = (await expenseCategoryRepository.GetAllAsync()).ToList();
+
+		foreach (var category in ExpenseCategories)
+		{
+			category.OperationType = Operation.None;
+		}
 	}
 
-	public async Task SaveExpenseCategories()
+	public async Task<bool> SaveExpenseCategories()
 	{
-		await expenseCategoryRepository.CrudManyAsync(ExpenseCategories);
+		var results = await expenseCategoryRepository.CrudManyAsync(ExpenseCategories);
 		await LoadExpenseCategories();
+
+		return results.All(x => x.Success);
 	}
 
 	public void UpdateExpenseCategories(IEnumerable<ExpenseCategory> categories)
@@ -32,9 +39,14 @@ public class ExpenseCategoryService(IExpenseCategoryRepository expenseCategoryRe
 				ExpenseCategories.Add(category);
 				continue;
 			}
-
-			existing.OperationType = Operation.Updated;
+			
+			existing.OperationType = category.OperationType;
 			existing.Name = category.Name;
 		}
+	}
+
+	public async Task DeleteExpenseCategory()
+	{
+		
 	}
 }

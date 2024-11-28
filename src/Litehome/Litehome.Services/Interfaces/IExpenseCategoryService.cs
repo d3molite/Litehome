@@ -8,7 +8,9 @@ public interface IExpenseCategoryService
 
 	public Task LoadExpenseCategories();
 	
-	public Task SaveExpenseCategories();
+	public Task<bool> SaveExpenseCategories();
 	
 	public void UpdateExpenseCategories(IEnumerable<ExpenseCategory> categories);
+
+	public Task DeleteExpenseCategory();
 }

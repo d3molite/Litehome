@@ -38,6 +38,20 @@ public class ExpenseService(
 		return result.All(x => x.Success);
 	}
 
+	public async Task<bool> RemoveCategoryFromAllExpenses(ExpenseCategory category)
+	{
+		await LoadExpenses();
+
+		foreach (var expense in Expenses.Where(x => x.ExpenseCategoryId == category.Id))
+		{
+			expense.ExpenseCategory = null;
+			expense.ExpenseCategoryId = null;
+			expense.OperationType = Operation.Updated;
+		}
+
+		return await SaveExpenses();
+	}
+
 	public void UpdateExpenses(IEnumerable<Expense> expenses)
 	{
 		foreach (var expense in expenses)
@@ -50,7 +64,7 @@ public class ExpenseService(
 				continue;
 			}
 
-			existing.OperationType = Operation.Updated;
+			existing.OperationType = expense.OperationType;
 			existing.ExpenseCategory = expense.ExpenseCategory;
 			existing.Date = expense.Date;
 			existing.Amount = expense.Amount;

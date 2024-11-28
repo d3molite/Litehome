@@ -7,10 +7,10 @@
 @inject IIncomeService IncomeService
 @inject IExpenseService ExpenseService
 
-<MudStack Class="flex-grow-1">
+<MudStack>
     <MudText Typo="Typo.h4">Monthly Finance Dashboard</MudText>
-    <MudStack Row="true" Class="flex-grow-1">
-        <MudStack Class="flex-grow-1">
+    <MudStack Row="true" Spacing="0">
+        <MudStack Class="w-100" Spacing="3">
             <MudGrid>
                 <MudItem xs="4">
                 </MudItem>
@@ -37,7 +37,7 @@
                     <MudDashboardBox Text="@($"{IncomeService.MemberIncomePercentage(member):P}")"/>
                 }
             </MudGrid>
-            <MudDivider Class="flex-grow-0" Light="true"></MudDivider>
+            <MudDivider FlexItem="false" Light="true"/>
             <MudGrid>
                 <MudDashboardBox Text="Monthly Shared Expenses"/>
                 <MudDashboardBox Xs="8" Text="@FormatCurrency(ExpenseService.TotalSharedExpenses)"/>
@@ -67,7 +67,7 @@
                     <MudDashboardBox Text="@FormatCurrency(ExpenseService.MemberSpending(member, true))"/>
                 }
             </MudGrid>
-            <MudDivider Class="flex-grow-0" Light="true"/>
+            <MudDivider FlexItem="false" Light="true"/>
             <MudGrid>
                 <MudDashboardBox Text="Remaining"/>
                 @foreach (var member in HomeMemberService.Members)
@@ -82,7 +82,7 @@
                     <MudDashboardBox Text="@GetMemberRemainingPercentage(member)"/>
                 }
             </MudGrid>
-            <MudDivider Class="flex-grow-0" Light="true"/>
+            <MudDivider FlexItem="false" Light="true"/>
             <MudGrid>
                 <MudDashboardBox Text="Chart View"/>
                 @foreach (var member in HomeMemberService.Members)

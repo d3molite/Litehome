@@ -1,52 +1,95 @@
-﻿@page "/config/expenseCategories"
+﻿@inherits Litehome.Components.Abstract.EditorPage<ExpenseCategory>
+
+@page "/config/expenseCategories"
 @using Demolite.Db.Enum
 @using Litehome.Db.Models
 @using Litehome.Services.Interfaces
+@inject IExpenseService ExpenseService
 @inject IExpenseCategoryService ExpenseCategoryService
+@inject IDialogService DialogService
 
 <MudStack Class="flex-grow-1" Justify="Justify.SpaceBetween">
     <MudStack>
         <MudText Typo="Typo.h4">Edit Expense Categories</MudText>
-        <MudDataGrid Items="@Categories" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" ReadOnly="false">
+        <MudDataGrid T="ExpenseCategory" Items="Items" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" ReadOnly="false"
+                     CommittedItemChanges="ItemUpdated">
             <Columns>
                 <PropertyColumn Property="x => x.Name" Title="Name" Editable="true"/>
+                <TemplateColumn Title="Actions">
+                    <EditTemplate>
+                        @if (context.Item.Name != "General")
+                        {
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error" EndIcon="@Icons.Material.Filled.Delete" @onclick="() => TryDeleteCategory(context.Item)">Delete</MudButton>
+                        }
+                    </EditTemplate>
+                </TemplateColumn>
             </Columns>
         </MudDataGrid>
         <MudStack Row="true" Reverse="true">
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="AddCategory"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="Add"></MudIconButton>
         </MudStack>
     </MudStack>
     <MudStack Row="true" Reverse="true">
         <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
+        @if (HasUnsavedChanges)
+        {
+            <MudAlert Severity="Severity.Error">
+                You have unsaved changes!
+            </MudAlert>
+        }
     </MudStack>
 </MudStack>
 
 @code {
 
-    private List<ExpenseCategory> Categories { get; set; } = [];
-
     protected override async Task OnInitializedAsync()
     {
         await ExpenseCategoryService.LoadExpenseCategories();
-        Categories = ExpenseCategoryService.ExpenseCategories;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task AddCategory()
-    {
-        ExpenseCategoryService.ExpenseCategories.Add(new ExpenseCategory
-        {
-            Name = "Please enter a Name",
-            OperationType = Operation.Created,
-        });
-
+        Items = ExpenseCategoryService.ExpenseCategories;
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task Save()
     {
-        ExpenseCategoryService.UpdateExpenseCategories(Categories);
-        await ExpenseCategoryService.SaveExpenseCategories();
-        await OnInitializedAsync();
+        ExpenseCategoryService.UpdateExpenseCategories(Items);
+        var result = await ExpenseCategoryService.SaveExpenseCategories();
+
+        if (result)
+        {
+            SaveSuccess();
+            await OnInitializedAsync();
+        }
+        else
+        {
+            SaveError();
+        }
     }
+
+    protected override ExpenseCategory CreateItem()
+    {
+        return new ExpenseCategory
+        {
+            Name = "Please enter a Name",
+            OperationType = Operation.Created,
+        };
+    }
+
+    private async Task TryDeleteCategory(ExpenseCategory category)
+    {
+        var result = await DialogService.ShowMessageBox("Warning", "Deleting this will remove it from all expenses automatically and immediately. Are you sure?", yesText: "Yes, delete!", noText:"No");
+
+        if (result is null)
+            return;
+
+        var resultExpense = await ExpenseService.RemoveCategoryFromAllExpenses(category);
+        
+        if (resultExpense)
+            Success("Removed category from all expenses.");
+        else
+            Error("Error while deleting expense category.");
+        
+        Delete(category);
+        await Save();
+    }
+
 }
