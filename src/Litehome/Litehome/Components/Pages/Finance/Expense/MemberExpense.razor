@@ -1,4 +1,4 @@
-﻿@inherits Litehome.Components.Abstract.SnackbarPage
+﻿@inherits Litehome.Components.Abstract.EditorPage<Expense>
 
 @page "/finance/expense/{Id}"
 @using Demolite.Db.Enum
@@ -19,8 +19,8 @@
             T="Expense"
             Style="display: flex; flex-direction: column; height: 100%;"
             FixedHeader="true"
-            Items="Expenses" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false"
-            CommittedItemChanges="(e) => ItemUpdated(e)">
+            Items="Items" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false"
+            CommittedItemChanges="ItemUpdated">
             <Columns>
                 <PropertyColumn Property="x => x.Name" Title="Name"/>
                 <PropertyColumn Property="x => x.Amount" Title="Amount"/>
@@ -73,11 +73,11 @@
         </MudDataGrid>
     </TableContent>
     <TableActionContent>
-        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="AddNew"/>
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="Add"/>
     </TableActionContent>
     <SiteActionContent>
         <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
-        @if (_unsavedChanges)
+        @if (HasUnsavedChanges)
         {
             <MudStack Justify="Justify.Center">
                 <MudText Color="Color.Error">You have unsaved changes!</MudText>
@@ -94,10 +94,6 @@
 
     private HomeMember? Member { get; set; }
 
-    private List<Expense> Expenses { get; set; } = [];
-
-    private bool _unsavedChanges;
-
     protected override async Task OnInitializedAsync()
     {
         await HomeMemberService.LoadMembers();
@@ -108,74 +104,49 @@
         {
             Member = HomeMemberService.Members.First(x => x.Id == Id);
 
-            Expenses = ExpenseService
+            Items = ExpenseService
                        .Expenses.Where(x => x.HomeMember == Member)
                        .ToList();
         }
         else
         {
-            Expenses = ExpenseService
-                       .Expenses.Where(x => x.HomeMember is null)
-                       .ToList();
+            Items = ExpenseService
+                    .Expenses.Where(x => x.HomeMember is null)
+                    .ToList();
         }
 
+        CheckForUnsavedChanges();
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task Save()
     {
-        ExpenseService.UpdateExpenses(Expenses);
+        ExpenseService.UpdateExpenses(Items);
         var result = await ExpenseService.SaveExpenses();
-        await OnInitializedAsync();
+
 
         if (result)
+        {
             SaveSuccess();
+            await OnInitializedAsync();
+        }
+            
         else
             SaveError();
     }
 
-    private async Task AddNew()
+    protected override Expense CreateItem()
     {
-        Expenses.Add(
-            new Expense()
-            {
-                Id = Guid
-                     .NewGuid()
-                     .ToString(),
-                Name = "Please enter name",
-                HomeMemberId = Member?.Id,
-                Amount = 0m,
-                Frequency = Frequency.Monthly,
-                OperationType = Operation.Created,
-            }
-        );
-
-        CheckForUnsavedChanges();
-        await InvokeAsync(StateHasChanged);
+        return new Expense()
+        {
+            Id = Guid
+                 .NewGuid()
+                 .ToString(),
+            Name = "Please enter name",
+            HomeMemberId = Member?.Id,
+            Amount = 0m,
+            Frequency = Frequency.Monthly,
+            OperationType = Operation.Created,
+        };
     }
-
-    private async Task Delete(Expense expense)
-    {
-        if (expense.OperationType is Operation.Created)
-            Expenses.Remove(expense);
-
-        else
-            expense.OperationType = Operation.Removed;
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private void ItemUpdated(Expense expense)
-    {
-        if (expense.OperationType != Operation.Created)
-            expense.OperationType = Operation.Updated;
-
-        CheckForUnsavedChanges();
-    }
-
-    private void CheckForUnsavedChanges()
-    {
-        _unsavedChanges = Expenses.Any(x => x.OperationType != Operation.None);
-    }
-
 }

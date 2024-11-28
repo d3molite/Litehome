@@ -1,4 +1,5 @@
-﻿@page "/finance/income/{Id}"
+﻿@inherits Litehome.Components.Abstract.EditorPage<Income>
+@page "/finance/income/{Id}"
 @using Demolite.Db.Enum
 @using Litehome.Db.Enum
 @using Litehome.Db.Models
@@ -13,8 +14,10 @@
     <TableContent>
         <MudDataGrid
             Style="display: flex; flex-direction: column; height: 100%;"
+            T="Income"
+            CommittedItemChanges="ItemUpdated"
             FixedHeader="true"
-            Items="Incomes" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false">
+            Items="Items" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false">
             <Columns>
                 <PropertyColumn Property="x => x.Name" Title="Name"/>
                 <PropertyColumn Property="x => x.Amount" Title="Amount"/>
@@ -32,7 +35,7 @@
         </MudDataGrid>
     </TableContent>
     <TableActionContent>
-        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="AddNew"/>
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="Add"/>
     </TableActionContent>
     <SiteActionContent>
         <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
@@ -46,8 +49,6 @@
 
     private HomeMember Member { get; set; } = null!;
 
-    private List<Income> Incomes { get; set; } = [];
-
     protected override async Task OnInitializedAsync()
     {
         await HomeMemberService.LoadMembers();
@@ -55,45 +56,40 @@
 
         Member = HomeMemberService.Members.First(x => x.Id == Id);
 
-        Incomes = IncomeService
+        Items = IncomeService
                   .Incomes.Where(x => x.HomeMember == Member)
                   .ToList();
 
+        CheckForUnsavedChanges();
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task Save()
     {
-        IncomeService.UpdateIncomes(Incomes);
-        await IncomeService.SaveIncomes();
-        await OnInitializedAsync();
-    }
-
-    private async Task AddNew()
-    {
-        Incomes.Add(
-            new Income()
-            {
-                Name = "Please enter name",
-                HomeMemberId = Member.Id,
-                Amount = 0m,
-                Frequency = Frequency.Monthly,
-                OperationType = Operation.Created,
-            }
-        );
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task Delete(Income income)
-    {
-        if (income.OperationType is Operation.Created)
-            Incomes.Remove(income);
-
+        IncomeService.UpdateIncomes(Items);
+        var result = await IncomeService.SaveIncomes();
+        
+        if (result)
+        {
+            SaveSuccess();
+            await OnInitializedAsync();
+        }
+            
         else
-            income.OperationType = Operation.Removed;
+            SaveError();
+    }
+    
 
-        await InvokeAsync(StateHasChanged);
+    protected override Income CreateItem()
+    {
+        return new Income()
+        {
+            Name = "Please enter name",
+            HomeMemberId = Member.Id,
+            Amount = 0m,
+            Frequency = Frequency.Monthly,
+            OperationType = Operation.Created,
+        };
     }
 
 }
