@@ -8,7 +8,7 @@ public interface IExpenseService
 
 	public Task LoadExpenses();
 
-	public Task SaveExpenses();
+	public Task<bool> SaveExpenses();
 	
 	public void UpdateExpenses(IEnumerable<Expense> expenses);
 	

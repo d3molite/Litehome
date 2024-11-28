@@ -1,5 +1,5 @@
 services:
-  connect:
+  litehome:
     image: hub.demolite.de/demoreg/litehome
     container_name: litehome
     restart: always

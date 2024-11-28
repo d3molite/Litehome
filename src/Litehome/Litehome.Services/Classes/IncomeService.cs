@@ -19,10 +19,12 @@ public class IncomeService(IIncomeRepository incomeRepository, IHomeMemberServic
 		}
 	}
 
-	public async Task SaveIncomes()
+	public async Task<bool> SaveIncomes()
 	{
-		await incomeRepository.CrudManyAsync(Incomes);
+		var results = await incomeRepository.CrudManyAsync(Incomes);
 		await LoadIncomes();
+
+		return results.All(x => x.Success);
 	}
 
 	public void UpdateIncomes(IEnumerable<Income> incoming)

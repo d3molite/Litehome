@@ -21,13 +21,21 @@ public class ExpenseService(
 		{
 			expense.HomeMember = homeMemberService.Members.Find(m => m.Id == expense.HomeMemberId);
 			expense.ExpenseCategory = expenseCategoryService.ExpenseCategories.Find(c => c.Id == expense.ExpenseCategoryId);
+			expense.OperationType = Operation.None;
 		}
 	}
 
-	public async Task SaveExpenses()
+	public async Task<bool> SaveExpenses()
 	{
-		await expenseRepository.CrudManyAsync(Expenses);
+		foreach (var expense in Expenses)
+		{
+			expense.ExpenseCategory = null;
+		}
+
+		var result = await expenseRepository.CrudManyAsync(Expenses);
 		await LoadExpenses();
+
+		return result.All(x => x.Success);
 	}
 
 	public void UpdateExpenses(IEnumerable<Expense> expenses)

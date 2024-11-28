@@ -8,7 +8,7 @@ public interface IIncomeService
 	
 	public Task LoadIncomes();
 
-	public Task SaveIncomes();
+	public Task<bool> SaveIncomes();
 
 	public void UpdateIncomes(IEnumerable<Income> incoming);
 
