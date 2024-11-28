@@ -1,4 +1,5 @@
 ﻿using Litehome.Db.Models;
+using Litehome.Db.Models.Finance;
 
 namespace Litehome.Services.Interfaces;
 

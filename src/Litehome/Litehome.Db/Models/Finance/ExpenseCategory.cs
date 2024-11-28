@@ -1,6 +1,6 @@
 ﻿using Demolite.Db.Models;
 
-namespace Litehome.Db.Models;
+namespace Litehome.Db.Models.Finance;
 
 public class ExpenseCategory : AbstractDbItem
 {

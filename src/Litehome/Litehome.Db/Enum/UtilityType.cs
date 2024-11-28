@@ -2,8 +2,9 @@
 
 public enum UtilityType
 {
-	Gas,
 	Water,
 	Electricity,
 	Heating,
+	Gas,
+	Oil,
 }

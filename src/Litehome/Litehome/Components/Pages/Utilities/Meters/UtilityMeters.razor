@@ -1,0 +1,92 @@
+﻿@using Demolite.Db.Enum
+@using Litehome.Db.Enum
+@using Litehome.Db.Models.Utilities
+@inherits Litehome.Components.Abstract.EditorPage<Litehome.Db.Models.Utilities.UtilityMeter>
+
+@page "/utilities/meters"
+
+<MudTablePage>
+    <TitleContent>
+        <MudText Typo="Typo.h4">Create and Edit Utility Meters</MudText>
+    </TitleContent>
+    <TableContent>
+        <MudDataGrid
+            T="UtilityMeter"
+            Style="display: flex; flex-direction: column; height: 100%;"
+            FixedHeader="true"
+            Items="Items" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false"
+            CommittedItemChanges="ItemUpdated">
+            <Columns>
+                <PropertyColumn Property="x => x.Name" Title="Name"></PropertyColumn>
+                <PropertyColumn Property="x => x.UtilityType" Title="Utility Type">
+                    <EditTemplate>
+                        <MudSelect @bind-Value="context.Item.UtilityType" Variant="Variant.Outlined" Label="Utility Type">
+                            @foreach (var utilityType in Enum.GetValues<UtilityType>())
+                            {
+                                <MudSelectItem Value="@utilityType">@utilityType.ToString()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </EditTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Unit" Title="Meter Unit">
+                    <EditTemplate>
+                        <MudSelect @bind-Value="context.Item.Unit" Variant="Variant.Outlined" Label="Meter Unit">
+                            @foreach (var meterUnit in Enum.GetValues<MeterUnit>())
+                            {
+                                <MudSelectItem Value="@meterUnit">@meterUnit.ToString()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </EditTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Active" Title="Active">
+                    <EditTemplate>
+                        <MudCheckBox @bind-Value="context.Item.Active">Active</MudCheckBox>
+                    </EditTemplate>
+                </PropertyColumn>
+            </Columns>
+        </MudDataGrid>
+    </TableContent>
+    <SiteActionContent>
+        <MudButton Variant="Variant.Outlined" Color="Color.Success">Save</MudButton>
+        @if (HasUnsavedChanges)
+        {
+            <MudAlert Severity="Severity.Error">You have unsaved changes!</MudAlert>
+        }
+    </SiteActionContent>
+    <TableActionContent>
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="Add"/>
+    </TableActionContent>
+</MudTablePage>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override UtilityMeter CreateItem()
+    {
+        return new UtilityMeter()
+        {
+            Name = "Please enter a name",
+            OperationType = Operation.Created,
+        };
+    }
+
+    protected override void ItemUpdated(UtilityMeter item)
+    {
+        if (item.Active)
+        {
+            foreach (var typeMeter in Items.Where(x => x.UtilityType == item.UtilityType))
+            {
+                if (typeMeter == item) continue;
+                typeMeter.Active = false;
+                typeMeter.OperationType = Operation.Updated;
+            }
+        }
+        
+        base.ItemUpdated(item);
+    }
+
+}

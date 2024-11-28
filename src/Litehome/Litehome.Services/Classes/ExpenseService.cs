@@ -1,6 +1,7 @@
 ﻿using Demolite.Db.Enum;
 using Litehome.Db.Interfaces;
 using Litehome.Db.Models;
+using Litehome.Db.Models.Finance;
 using Litehome.Services.Interfaces;
 
 namespace Litehome.Services.Classes;

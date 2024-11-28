@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Demolite.Db.Models;
 using Litehome.Db.Enum;
 
-namespace Litehome.Db.Models;
+namespace Litehome.Db.Models.Finance;
 
 public class Expense : AbstractDbItem
 {
