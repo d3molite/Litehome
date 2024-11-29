@@ -45,15 +45,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await ExpenseCategoryService.LoadExpenseCategories();
-        Items = ExpenseCategoryService.ExpenseCategories;
+        await ExpenseCategoryService.Load();
+        Items = ExpenseCategoryService.Items;
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task Save()
     {
-        ExpenseCategoryService.UpdateExpenseCategories(Items);
-        var result = await ExpenseCategoryService.SaveExpenseCategories();
+        ExpenseCategoryService.Update(Items);
+        var result = await ExpenseCategoryService.Save();
 
         if (result)
         {

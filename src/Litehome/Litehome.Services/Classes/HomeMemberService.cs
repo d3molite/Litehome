@@ -1,22 +1,15 @@
-﻿using Litehome.Db.Interfaces;
-using Litehome.Db.Models;
+﻿using Demolite.Db.Interfaces;
 using Litehome.Db.Models.Finance;
+using Litehome.Services.Classes.Abstract;
 using Litehome.Services.Interfaces;
 
 namespace Litehome.Services.Classes;
 
-public class HomeMemberService(IHomeMemberRepository homeMemberRepository) : IHomeMemberService
+public class HomeMemberService(IDbRepository<HomeMember> repository)
+	: AbstractItemService<HomeMember>(repository), IHomeMemberService
 {
-	public List<HomeMember> Members { get; set; } = [];
-
-	public async Task LoadMembers()
+	protected override void UpdateItem(HomeMember existing, HomeMember incoming)
 	{
-		Members = (await homeMemberRepository.GetAllAsync()).ToList();
-	}
-
-	public async Task SaveMembers()
-	{
-		await homeMemberRepository.CrudManyAsync(Members);
-		await LoadMembers();
+		existing.Name = incoming.Name;
 	}
 }

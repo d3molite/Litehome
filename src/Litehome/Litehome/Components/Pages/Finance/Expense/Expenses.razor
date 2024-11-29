@@ -7,7 +7,7 @@
 <MudStack Class="flex-grow-1 mh-100">
     <MudText Typo="Typo.h4">Monthly Expense Overview</MudText>
     <MudGrid Class="flex-grow-1">
-        @foreach (var member in HomeMemberService.Members)
+        @foreach (var member in HomeMemberService.Items)
         {
             <MudItem xs="4">
                 <a href="/finance/expense/@member.Id">
@@ -15,9 +15,9 @@
                         <MudStack>
                             <MudText>@member.Name</MudText>
                             <MudDivider FlexItem="false" Light="true"/>
-                            <MudText>General: @ExpenseService.Expenses.Where(x => x.HomeMember == member && !x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
-                            <MudText>Savings: @ExpenseService.Expenses.Where(x => x.HomeMember == member && x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
-                            <MudText>Total: @ExpenseService.Expenses.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                            <MudText>General: @ExpenseService.Items.Where(x => x.HomeMember == member && !x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                            <MudText>Savings: @ExpenseService.Items.Where(x => x.HomeMember == member && x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                            <MudText>Total: @ExpenseService.Items.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
                         </MudStack>
                     </MudPaper>
                 </a>
@@ -29,9 +29,9 @@
                     <MudStack>
                         <MudText>Shared</MudText>
                         <MudDivider FlexItem="false" Light="true"/>
-                        <MudText>General: @ExpenseService.Expenses.Where(x => x.HomeMember is null && !x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
-                        <MudText>Savings: @ExpenseService.Expenses.Where(x => x.HomeMember  is null && x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
-                        <MudText>Total: @ExpenseService.Expenses.Where(x => x.HomeMember is null).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                        <MudText>General: @ExpenseService.Items.Where(x => x.HomeMember is null && !x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                        <MudText>Savings: @ExpenseService.Items.Where(x => x.HomeMember  is null && x.IsSavings).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
+                        <MudText>Total: @ExpenseService.Items.Where(x => x.HomeMember is null).Sum(x => x.MonthlyAmount).AsCurrency()</MudText>
                     </MudStack>
                 </MudPaper>
             </a>
@@ -43,7 +43,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await HomeMemberService.LoadMembers();
-        await ExpenseService.LoadExpenses();
+        await HomeMemberService.Load();
+        await ExpenseService.Load();
     }
 }

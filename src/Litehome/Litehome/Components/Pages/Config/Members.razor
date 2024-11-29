@@ -8,7 +8,7 @@
 <MudStack Class="flex-grow-1" Justify="Justify.SpaceBetween">
     <MudStack>
         <MudText Typo="Typo.h4">Add and Edit Home Members</MudText>
-        <MudDataGrid Items="@HomeMemberService.Members" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" ReadOnly="false">
+        <MudDataGrid Items="@HomeMemberService.Items" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" ReadOnly="false">
             <Columns>
                 <PropertyColumn Property="x => x.Name" Editable="true" Title="Name"/>
             </Columns>
@@ -26,13 +26,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await HomeMemberService.LoadMembers();
+        await HomeMemberService.Load();
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task AddMember()
     {
-        HomeMemberService.Members.Add(new HomeMember
+        HomeMemberService.Items.Add(new HomeMember
         {
             Name = "Please enter a name",
             OperationType = Operation.Created,
@@ -43,7 +43,7 @@
 
     private async Task Save()
     {
-        await HomeMemberService.SaveMembers();
+        await HomeMemberService.Save();
         await InvokeAsync(StateHasChanged);
     }
     

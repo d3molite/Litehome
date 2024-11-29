@@ -1,19 +1,11 @@
-﻿using Litehome.Db.Models;
-using Litehome.Db.Models.Finance;
+﻿using Litehome.Db.Models.Finance;
+using Litehome.Services.Interfaces.Abstract;
 
 namespace Litehome.Services.Interfaces;
 
-public interface IExpenseService
+public interface IExpenseService : IAbstractItemService<Expense>
 {
-	public List<Expense> Expenses { get; set; }
-
-	public Task LoadExpenses();
-
-	public Task<bool> SaveExpenses();
-
 	public Task<bool> RemoveCategoryFromAllExpenses(ExpenseCategory category);
-	
-	public void UpdateExpenses(IEnumerable<Expense> expenses);
 	
 	public decimal TotalSharedExpenses { get; }
 

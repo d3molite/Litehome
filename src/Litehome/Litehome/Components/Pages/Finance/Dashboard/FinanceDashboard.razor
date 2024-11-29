@@ -15,14 +15,14 @@
             <MudGrid>
                 <MudItem xs="4">
                 </MudItem>
-                @foreach (var member in HomeMemberService.Members)
+                @foreach (var member in HomeMemberService.Items)
                 {
                     <MudDashboardBox Text="@member.Name"/>
                 }
             </MudGrid>
             <MudGrid>
                 <MudDashboardBox Text="Monthly Income"/>
-                @foreach (var member in HomeMemberService.Members)
+                @foreach (var member in HomeMemberService.Items)
                 {
                     <MudDashboardBox Text="@FormatCurrency(IncomeService.MonthlyMemberIncome(member))"/>
                 }
@@ -33,7 +33,7 @@
             </MudGrid>
             <MudGrid>
                 <MudDashboardBox Text="Percentage"/>
-                @foreach (var member in HomeMemberService.Members)
+                @foreach (var member in HomeMemberService.Items)
                 {
                     <MudDashboardBox Text="@($"{IncomeService.MemberIncomePercentage(member):P}")"/>
                 }
@@ -49,21 +49,21 @@
             </MudGrid>
             <MudGrid>
                 <MudDashboardBox Text="Weighted Monthly"/>
-                @foreach (var member in HomeMemberService.Members)
+                @foreach (var member in HomeMemberService.Items)
                 {
                     <MudDashboardBox Text="@FormatCurrency(PercentageWeightedMonthly(member))"/>
                 }
             </MudGrid>
             <MudGrid>
                 <MudDashboardBox Text="Monthly Spending"/>
-                @foreach (var member in HomeMemberService.Members)
+                @foreach (var member in HomeMemberService.Items)
                 {
                     <MudDashboardBox Text="@FormatCurrency(ExpenseService.MemberSpending(member))"/>
                 }
             </MudGrid>
             <MudGrid>
                 <MudDashboardBox Text="Monthly Saving"/>
-                @foreach (var member in HomeMemberService.Members)
+                @foreach (var member in HomeMemberService.Items)
                 {
                     <MudDashboardBox Text="@FormatCurrency(ExpenseService.MemberSpending(member, true))"/>
                 }
@@ -71,14 +71,14 @@
             <MudDivider FlexItem="false" Light="true"/>
             <MudGrid>
                 <MudDashboardBox Text="Remaining"/>
-                @foreach (var member in HomeMemberService.Members)
+                @foreach (var member in HomeMemberService.Items)
                 {
                     <MudDashboardBox Text="@FormatCurrency(GetMemberRemaining(member))"/>
                 }
             </MudGrid>
             <MudGrid>
                 <MudDashboardBox Text="Percentage"/>
-                @foreach (var member in HomeMemberService.Members)
+                @foreach (var member in HomeMemberService.Items)
                 {
                     <MudDashboardBox Text="@GetMemberRemainingPercentage(member)"/>
                 }
@@ -86,7 +86,7 @@
             <MudDivider FlexItem="false" Light="true"/>
             <MudGrid>
                 <MudDashboardBox Text="Chart View"/>
-                @foreach (var member in HomeMemberService.Members)
+                @foreach (var member in HomeMemberService.Items)
                 {
                     <MudItem xs="4">
                         <MudPaper Class="h-50" >
@@ -104,15 +104,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await HomeMemberService.LoadMembers();
-        await IncomeService.LoadIncomes();
-        await ExpenseService.LoadExpenses();
+        await HomeMemberService.Load();
+        await IncomeService.Load();
+        await ExpenseService.Load();
 
         await InvokeAsync(StateHasChanged);
     }
 
     private decimal TotalWeightedMonthly()
-        => HomeMemberService.Members.Sum(PercentageWeightedMonthly);
+        => HomeMemberService.Items.Sum(PercentageWeightedMonthly);
     
     private decimal TotalMonthlyRemaining()
         => TotalWeightedMonthly() - ExpenseService.TotalSharedExpenses;
@@ -129,8 +129,8 @@
 
     private decimal GetMemberRemaining(HomeMember member)
     {
-        var income = IncomeService.Incomes.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount);
-        var expenses = ExpenseService.Expenses.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount);
+        var income = IncomeService.Items.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount);
+        var expenses = ExpenseService.Items.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount);
         var weighted = PercentageWeightedMonthly(member);
 
         return income - expenses - weighted;
@@ -138,7 +138,7 @@
 
     private string GetMemberRemainingPercentage(HomeMember member)
     {
-        var income = IncomeService.Incomes.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount);
+        var income = IncomeService.Items.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount);
         return income > 0 ? $"{GetMemberRemaining(member) / income:P}" : $"{0m:P}";
     }
 

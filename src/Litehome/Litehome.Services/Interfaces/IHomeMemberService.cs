@@ -1,13 +1,6 @@
-﻿using Litehome.Db.Models;
-using Litehome.Db.Models.Finance;
+﻿using Litehome.Db.Models.Finance;
+using Litehome.Services.Interfaces.Abstract;
 
 namespace Litehome.Services.Interfaces;
 
-public interface IHomeMemberService
-{
-	public List<HomeMember> Members { get; set; }
-
-	public Task LoadMembers();
-
-	public Task SaveMembers();
-}
+public interface IHomeMemberService : IAbstractItemService<HomeMember>;

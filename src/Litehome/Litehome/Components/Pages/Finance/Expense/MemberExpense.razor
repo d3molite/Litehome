@@ -38,7 +38,7 @@
                 <TemplateColumn Title="Category">
                     <EditTemplate>
                         <MudSelect @bind-Value="context.Item.ExpenseCategoryId" Variant="Variant.Outlined" Label="Category">
-                            @foreach (var expenseCategory in ExpenseCategoryService.ExpenseCategories)
+                            @foreach (var expenseCategory in ExpenseCategoryService.Items)
                             {
                                 <MudSelectItem Value="expenseCategory.Id">@expenseCategory.Name</MudSelectItem>
                             }
@@ -96,22 +96,22 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await HomeMemberService.LoadMembers();
-        await ExpenseCategoryService.LoadExpenseCategories();
-        await ExpenseService.LoadExpenses();
+        await HomeMemberService.Load();
+        await ExpenseCategoryService.Load();
+        await ExpenseService.Load();
 
         if (Id != "shared")
         {
-            Member = HomeMemberService.Members.First(x => x.Id == Id);
+            Member = HomeMemberService.Items.First(x => x.Id == Id);
 
             Items = ExpenseService
-                       .Expenses.Where(x => x.HomeMember == Member)
+                       .Items.Where(x => x.HomeMember == Member)
                        .ToList();
         }
         else
         {
             Items = ExpenseService
-                    .Expenses.Where(x => x.HomeMember is null)
+                    .Items.Where(x => x.HomeMember is null)
                     .ToList();
         }
 
@@ -121,8 +121,8 @@
 
     private async Task Save()
     {
-        ExpenseService.UpdateExpenses(Items);
-        var result = await ExpenseService.SaveExpenses();
+        ExpenseService.Update(Items);
+        var result = await ExpenseService.Save();
 
 
         if (result)

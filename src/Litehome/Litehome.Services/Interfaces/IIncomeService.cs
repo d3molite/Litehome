@@ -1,18 +1,10 @@
-﻿using Litehome.Db.Models;
-using Litehome.Db.Models.Finance;
+﻿using Litehome.Db.Models.Finance;
+using Litehome.Services.Interfaces.Abstract;
 
 namespace Litehome.Services.Interfaces;
 
-public interface IIncomeService
+public interface IIncomeService : IAbstractItemService<Income>
 {
-	public List<Income> Incomes { get; set; }
-	
-	public Task LoadIncomes();
-
-	public Task<bool> SaveIncomes();
-
-	public void UpdateIncomes(IEnumerable<Income> incoming);
-
 	public decimal MonthlyMemberIncome(HomeMember member);
 
 	public decimal TotalMonthlyIncome { get; }

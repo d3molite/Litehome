@@ -1,9 +1,12 @@
 ﻿@using Demolite.Db.Enum
 @using Litehome.Db.Enum
 @using Litehome.Db.Models.Utilities
+@using Litehome.Services.Interfaces
 @inherits Litehome.Components.Abstract.EditorPage<Litehome.Db.Models.Utilities.UtilityMeter>
 
 @page "/utilities/meters"
+
+@inject IUtilityMeterService UtilityMeterService
 
 <MudTablePage>
     <TitleContent>
@@ -47,7 +50,7 @@
         </MudDataGrid>
     </TableContent>
     <SiteActionContent>
-        <MudButton Variant="Variant.Outlined" Color="Color.Success">Save</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
         @if (HasUnsavedChanges)
         {
             <MudAlert Severity="Severity.Error">You have unsaved changes!</MudAlert>
@@ -62,6 +65,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await UtilityMeterService.Load();
+        Items = UtilityMeterService.Items;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -87,6 +92,11 @@
         }
         
         base.ItemUpdated(item);
+    }
+
+    private async Task Save()
+    {
+        
     }
 
 }

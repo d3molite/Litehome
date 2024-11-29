@@ -27,9 +27,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await MemberService.LoadMembers();
-        await ExpenseCategoryService.LoadExpenseCategories();
-        await ExpenseService.LoadExpenses();
+        await MemberService.Load();
+        await ExpenseCategoryService.Load();
+        await ExpenseService.Load();
         SetupExpensesPerMonth();
         SetupExpensesPerCategory();
         await InvokeAsync(StateHasChanged);
@@ -43,9 +43,9 @@
 
     private void SetupExpensesPerCategory()
     {
-        var categories = ExpenseCategoryService.ExpenseCategories;
+        var categories = ExpenseCategoryService.Items;
 
-        var grouped = ExpenseService.Expenses.GroupBy(x => x.HomeMember);
+        var grouped = ExpenseService.Items.GroupBy(x => x.HomeMember);
 
         ExpensesPerCategoryLabels = categories.Select(x => x.Name).ToArray();
 
@@ -72,14 +72,14 @@
             }
         );
         
-        var sharedExpenses = ExpenseService.Expenses.Where(x => x.IsShared);
+        var sharedExpenses = ExpenseService.Items.Where(x => x.IsShared);
 
         foreach (var sharedExpense in sharedExpenses)
         {
             AddExpenseToCategories("Shared", sharedExpense);
         }
 
-        foreach (var member in MemberService.Members)
+        foreach (var member in MemberService.Items)
         {
             ExpensesPerMonth.Add(new ChartSeries()
             {
@@ -90,7 +90,7 @@
                 ],
             });
 
-            var expenses = ExpenseService.Expenses.Where(x => x.HomeMember == member);
+            var expenses = ExpenseService.Items.Where(x => x.HomeMember == member);
 
             foreach (var expense in expenses)
             {

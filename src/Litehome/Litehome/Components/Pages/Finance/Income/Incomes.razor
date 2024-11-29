@@ -6,7 +6,7 @@
 <MudStack Class="flex-grow-1">
     <MudText Typo="Typo.h4">Monthly Income Overview</MudText>
     <MudGrid Class="flex-grow-1">
-        @foreach (var member in HomeMemberService.Members)
+        @foreach (var member in HomeMemberService.Items)
         {
             <MudItem xs="4">
                 <a href="/finance/income/@member.Id">
@@ -14,7 +14,7 @@
                         <MudStack>
                             <MudText>@member.Name</MudText>
                             <MudDivider FlexItem="false" Light="true"/>
-                            <MudText>@IncomeService.Incomes.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount) €</MudText>
+                            <MudText>@IncomeService.Items.Where(x => x.HomeMember == member).Sum(x => x.MonthlyAmount) €</MudText>
                         </MudStack>
                     </MudPaper>
                 </a>
@@ -27,8 +27,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await HomeMemberService.LoadMembers();
-        await IncomeService.LoadIncomes();
+        await HomeMemberService.Load();
+        await IncomeService.Load();
     }
 
 }

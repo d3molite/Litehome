@@ -2,81 +2,65 @@
 using Litehome.Db.Interfaces;
 using Litehome.Db.Models;
 using Litehome.Db.Models.Finance;
+using Litehome.Services.Classes.Abstract;
 using Litehome.Services.Interfaces;
 
 namespace Litehome.Services.Classes;
 
 public class ExpenseService(
-	IExpenseRepository expenseRepository,
+	IExpenseRepository repository,
 	IHomeMemberService homeMemberService,
 	IExpenseCategoryService expenseCategoryService
-) : IExpenseService
+) : AbstractItemService<Expense>(repository), IExpenseService
 {
-	public List<Expense> Expenses { get; set; } = [];
-
-	public async Task LoadExpenses()
+	public override async Task Load()
 	{
-		Expenses = (await expenseRepository.GetAllAsync()).ToList();
+		await base.Load();
 
-		foreach (var expense in Expenses)
+		foreach (var expense in Items)
 		{
-			expense.HomeMember = homeMemberService.Members.Find(m => m.Id == expense.HomeMemberId);
-			expense.ExpenseCategory = expenseCategoryService.ExpenseCategories.Find(c => c.Id == expense.ExpenseCategoryId);
+			expense.HomeMember = homeMemberService.Items.Find(m => m.Id == expense.HomeMemberId);
+			expense.ExpenseCategory = expenseCategoryService.Items.Find(c => c.Id == expense.ExpenseCategoryId);
 			expense.OperationType = Operation.None;
 		}
 	}
 
-	public async Task<bool> SaveExpenses()
+	public override async Task<bool> Save()
 	{
-		foreach (var expense in Expenses)
+		foreach (var expense in Items)
 		{
 			expense.ExpenseCategory = null;
 		}
 
-		var result = await expenseRepository.CrudManyAsync(Expenses);
-		await LoadExpenses();
-
-		return result.All(x => x.Success);
+		return await base.Save();
 	}
 
+	protected override void UpdateItem(Expense existing, Expense incoming)
+	{
+		existing.ExpenseCategory = incoming.ExpenseCategory;
+		existing.Date = incoming.Date;
+		existing.Amount = incoming.Amount;
+	}
+	
 	public async Task<bool> RemoveCategoryFromAllExpenses(ExpenseCategory category)
 	{
-		await LoadExpenses();
+		await Load();
 
-		foreach (var expense in Expenses.Where(x => x.ExpenseCategoryId == category.Id))
+		foreach (var expense in Items.Where(x => x.ExpenseCategoryId == category.Id))
 		{
 			expense.ExpenseCategory = null;
 			expense.ExpenseCategoryId = null;
 			expense.OperationType = Operation.Updated;
 		}
 
-		return await SaveExpenses();
+		return await Save();
 	}
 
-	public void UpdateExpenses(IEnumerable<Expense> expenses)
-	{
-		foreach (var expense in expenses)
-		{
-			var existing = Expenses.Find(x => x.Id == expense.Id);
-
-			if (existing is null)
-			{
-				Expenses.Add(expense);
-				continue;
-			}
-
-			existing.OperationType = expense.OperationType;
-			existing.ExpenseCategory = expense.ExpenseCategory;
-			existing.Date = expense.Date;
-			existing.Amount = expense.Amount;
-		}
-	}
-
-	public decimal TotalSharedExpenses => Expenses.Where(x => x.HomeMemberId is null).Sum(x => x.MonthlyAmount);
+	public decimal TotalSharedExpenses => Items.Where(x => x.HomeMemberId is null).Sum(x => x.MonthlyAmount);
 
 	public decimal PercentageWeightedMonthly(decimal percentage)
 		=> percentage * TotalSharedExpenses;
 
 	public decimal MemberSpending(HomeMember member, bool isSavings = false)
-		=> Expenses.Where(x => x.HomeMember == member && x.IsSavings == isSavings).Sum(x => x.MonthlyAmount);
+		=> Items.Where(x => x.HomeMember == member && x.IsSavings == isSavings).Sum(x => x.MonthlyAmount);
 }
