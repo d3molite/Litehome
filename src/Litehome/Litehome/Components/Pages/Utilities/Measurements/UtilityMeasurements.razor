@@ -1,0 +1,61 @@
+﻿@page "/utilities/measurements"
+@using Litehome.Db.Models.Utilities
+@using Litehome.Services.Interfaces
+@using Litehome.Util.Enum
+
+@inject IUtilityMeterService UtilityMeterService
+
+<MudStack>
+    <MudStack Row Justify="Justify.SpaceBetween">
+        <MudText Typo="Typo.h4">Measurement Overview</MudText>
+        <MudAlert Severity="Severity.Info">Click any Meter to add or modify Measurements</MudAlert>
+    </MudStack>
+    <MudGrid>
+        @foreach (var meter in ActiveMeters)
+        {
+            <MudItem xs="3">
+                <MudCard>
+                    <MudCardHeader>
+                        <MudStack Class="flex-grow-1">
+                            <MudStack Row Class="flex-grow-1" Justify="Justify.SpaceBetween">
+                                <MudText>@meter.Name</MudText>
+                                <MudText>@meter.UtilityType</MudText>
+                                <MudText>@meter.Unit.GetDisplayName()</MudText>
+                            </MudStack>
+                            <MudDivider FlexItem="false" Light="true"/>
+                        </MudStack>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack>
+                            <MudText>Measurements: @meter.Measurements.Count</MudText>
+                            <MudText>Last Entry: @meter.Measurements.LastOrDefault()?.MeasurementDate</MudText>
+                            <MudDivider FlexItem="false" Light="true"/>
+                        </MudStack>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudStack Class="flex-grow-1">
+                            <MudNavLink Href="@($"/utilities/measurements/{meter.Id}")">View & Edit Measurements</MudNavLink>
+                        </MudStack>
+                    </MudCardActions>
+                </MudCard>
+
+            </MudItem>
+        }
+
+    </MudGrid>
+</MudStack>
+
+@code {
+
+    private List<UtilityMeter> ActiveMeters { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UtilityMeterService.Load();
+
+        ActiveMeters = UtilityMeterService
+                       .Items.Where(x => x.Active)
+                       .ToList();
+    }
+
+}

@@ -1,0 +1,103 @@
+﻿@page "/utilities/dashboard"
+@using Litehome.Models
+@using Litehome.Services.Interfaces
+@using Litehome.Util.Enum
+@using Litehome.Db.Models.Utilities
+@using ApexCharts
+
+@inject IUtilityMeterService MeterService
+
+<MudStack>
+    @foreach (var grouping in Measurements)
+    {
+    <MudPaper Class="p-2">
+        <MudStack>
+            <ApexChart 
+                TItem="ConsumptionPerMonth" 
+                Title="@grouping.UtilityType.GetDisplayName()">
+                @foreach (var yearSeries in grouping.MeasurementByYears)
+                {
+                    <ApexPointSeries 
+                        SeriesType="SeriesType.Line"
+                        Name="@yearSeries.Year.ToString()"
+                        TItem="ConsumptionPerMonth" 
+                        Items="yearSeries.Measurements" 
+                        XValue="@(x => x.Month)" 
+                        YValue="@(x => x.Consumption)"/>
+                }
+            </ApexChart>
+        </MudStack>
+    </MudPaper>
+    }
+</MudStack>
+
+
+@code {
+
+    private List<MeasurementsByType> Measurements { get; set; } = [];
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await MeterService.Load();
+
+        Measurements = GetMeasurementsByType(MeterService.Items);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private List<MeasurementsByType> GetMeasurementsByType(IEnumerable<UtilityMeter> meters)
+    {
+        var grouped = meters.GroupBy(x => x.UtilityType)
+                            .Select(
+                                x => new MeasurementsByType()
+                                {
+                                    UtilityType = x.Key,
+                                    MeasurementByYears = GetMeasurementsByYear(x.SelectMany(y => y.Measurements)),
+                                }
+                            )
+                            .ToList();
+
+        return grouped;
+    }
+
+    private List<MeasurementsByYear> GetMeasurementsByYear(IEnumerable<UtilityMeasurement> measurements)
+    {
+        var grouped = measurements
+                      .GroupBy(x => x.MeasurementMonth.Year)
+                      .Select(
+                          x => new MeasurementsByYear()
+                          {
+                              Year = x.Key,
+                              Measurements = GetConsumptionPerMonth(x.ToList()),
+                          }
+                      )
+                      .ToList();
+
+        return grouped;
+    }
+
+    private List<ConsumptionPerMonth> GetConsumptionPerMonth(IEnumerable<UtilityMeasurement> measurements)
+    {
+        var groupedByMonth = measurements.GroupBy(x => x.MeasurementMonth.Month);
+
+        var list = new List<ConsumptionPerMonth>();
+
+        foreach (var grouping in groupedByMonth)
+        {
+            var item = new ConsumptionPerMonth()
+            {
+                Month = grouping.Key,
+                MonthName = new DateOnly(1, grouping.Key, 1).ToString("MMMM"),
+            };
+
+            var consumption = Math.Round(grouping.Sum(x => (decimal)x.Consumption), 3);
+
+            item.Consumption = consumption > 0 ? consumption : null;
+            
+            list.Add(item);
+        }
+
+        return list;
+    }
+
+}

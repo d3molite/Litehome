@@ -1,6 +1,5 @@
 ﻿using Demolite.Db.Enum;
-using Litehome.Db.Interfaces;
-using Litehome.Db.Models;
+using Demolite.Db.Interfaces;
 using Litehome.Db.Models.Finance;
 using Litehome.Services.Classes.Abstract;
 using Litehome.Services.Interfaces;
@@ -8,7 +7,7 @@ using Litehome.Services.Interfaces;
 namespace Litehome.Services.Classes;
 
 public class ExpenseService(
-	IExpenseRepository repository,
+	IDbRepository<Expense> repository,
 	IHomeMemberService homeMemberService,
 	IExpenseCategoryService expenseCategoryService
 ) : AbstractItemService<Expense>(repository), IExpenseService

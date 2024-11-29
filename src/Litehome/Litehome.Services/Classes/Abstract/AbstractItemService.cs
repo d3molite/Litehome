@@ -1,5 +1,4 @@
-﻿using System.Transactions;
-using Demolite.Db.Enum;
+﻿using Demolite.Db.Enum;
 using Demolite.Db.Interfaces;
 using Litehome.Services.Interfaces.Abstract;
 
@@ -23,20 +22,8 @@ public abstract class AbstractItemService<T>(IDbRepository<T> repository) : IAbs
 
 	public virtual async Task<bool> Save()
 	{
-		using var scope = new TransactionScope();
-
-		try
-		{
-			var results = await repository.CrudManyAsync(Items);
-			scope.Complete();
-			return results.All(x => x.Success);
-		}
-		catch (Exception e)
-		{
-			
-		}
-		
-		return false;
+		var results = await repository.CrudManyAsync(Items);
+		return results.All(x => x.Success);
 	}
 
 	protected abstract void UpdateItem(T existing, T incoming);

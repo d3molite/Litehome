@@ -1,0 +1,127 @@
+﻿@using Demolite.Db.Enum
+@using Demolite.Db.Interfaces
+@using Litehome.Db.Models.Utilities
+@using Litehome.Services.Interfaces
+@using Litehome.Util.Format
+@inherits Litehome.Components.Abstract.EditorPage<Litehome.Db.Models.Utilities.UtilityMeasurement>
+
+@page "/utilities/measurements/{id}"
+
+@inject IUtilityMeterService UtilityMeterService
+@inject IDbRepository<UtilityMeasurement> MeasurementRepository
+
+<MudTablePage>
+    <TitleContent>
+        <MudText Typo="Typo.h4">Editing Measurements for: @Meter.Name</MudText>
+    </TitleContent>
+    <TableContent>
+        <MudDataGrid
+            T="UtilityMeasurement"
+            Style="display: flex; flex-direction: column; height: 100%;"
+            FixedHeader="true"
+            Items="Items" EditTrigger="DataGridEditTrigger.OnRowClick" EditMode="DataGridEditMode.Form" ReadOnly="false"
+            CommittedItemChanges="ItemUpdated">
+            <Columns>
+                <PropertyColumn Property="x => x.MeasurementDate" Title="Date">
+                    <EditTemplate>
+                        <MudDatePicker @bind-Date="context.Item.DatePickerValue" Variant="Variant.Outlined" Label="Measurement Date"></MudDatePicker>
+                    </EditTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.MeasurementValue" Title="Measurement Value"></PropertyColumn>
+                <TemplateColumn Title="Consumption" Editable="false">
+                    <CellTemplate>
+                        <MudText>@context.Item.Consumption.AsMeterConsumption()</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Measurement for Month">
+                    <CellTemplate>
+                        <MudText>@context.Item.MeasurementMonth.ToString("MMMM yyyy")</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+    </TableContent>
+    <TableActionContent>
+        <MudStack Row>
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" @onclick="Add"/>
+            <MudButton Variant="Variant.Outlined">Recalculate All</MudButton>
+        </MudStack>
+    </TableActionContent>
+    <SiteActionContent>
+        <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="Save">Save</MudButton>
+        @if (HasUnsavedChanges)
+        {
+            <MudAlert Severity="Severity.Error">
+                You have unsaved changes!
+            </MudAlert>
+        }
+    </SiteActionContent>
+</MudTablePage>
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private UtilityMeter Meter { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UtilityMeterService.Load();
+        Meter = UtilityMeterService.Items.Find(x => x.Id == Id)!;
+        Items = Meter.Measurements.ToList();
+
+        CheckForUnsavedChanges();
+    }
+
+    protected override UtilityMeasurement CreateItem()
+    {
+        return new UtilityMeasurement()
+        {
+            OperationType = Operation.Created,
+            MeterId = Meter.Id,
+        };
+    }
+
+    protected override void ItemUpdated(UtilityMeasurement item)
+    {
+        // get the item that has the next lower date
+        var previousItem = Items
+                           .Where(x => x.MeasurementDate < item.MeasurementDate)
+                           .OrderByDescending(x => x.MeasurementDate)
+                           .FirstOrDefault();
+
+        // get the item that has the next higher date
+        var nextItem = Items.FirstOrDefault(x => x.MeasurementDate > item.MeasurementDate);
+
+        if (previousItem is not null)
+        {
+            item.Consumption = item.MeasurementValue - previousItem.MeasurementValue;
+        }
+
+        if (nextItem is not null)
+        {
+            nextItem.Consumption = nextItem.MeasurementValue - item.MeasurementValue;
+            nextItem.OperationType = Operation.Updated;
+        }
+
+        base.ItemUpdated(item);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Save()
+    {
+        var results = await MeasurementRepository.CrudManyAsync(Items);
+
+        if (results.All(x => x.Success))
+        {
+            SaveSuccess();
+            await OnInitializedAsync();
+        }
+        else
+        {
+            SaveError();
+        }
+    }
+
+}

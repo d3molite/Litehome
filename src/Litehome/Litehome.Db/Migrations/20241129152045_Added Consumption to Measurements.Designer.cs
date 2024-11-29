@@ -3,6 +3,7 @@ using System;
 using Litehome.Db.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Litehome.Db.Migrations
 {
     [DbContext(typeof(LitehomeDbContext))]
-    partial class LitehomeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241129152045_Added Consumption to Measurements")]
+    partial class AddedConsumptiontoMeasurements
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");

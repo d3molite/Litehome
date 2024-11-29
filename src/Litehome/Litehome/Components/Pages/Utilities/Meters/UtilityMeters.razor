@@ -67,6 +67,7 @@
     {
         await UtilityMeterService.Load();
         Items = UtilityMeterService.Items;
+        CheckForUnsavedChanges();
         await InvokeAsync(StateHasChanged);
     }
 
@@ -96,7 +97,17 @@
 
     private async Task Save()
     {
-        
+        var result = await UtilityMeterService.Save();
+
+        if (result)
+        {
+            SaveSuccess();
+            await OnInitializedAsync();
+        }
+        else
+        {
+            SaveError();
+        }
     }
 
 }
