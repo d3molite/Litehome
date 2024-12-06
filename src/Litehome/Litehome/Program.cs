@@ -10,7 +10,13 @@ using Litehome.Services.Classes;
 using Litehome.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddLocalization();
+System.Globalization.CultureInfo.DefaultThreadCurrentCulture = new System.Globalization.CultureInfo("de-DE");
+System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = new System.Globalization.CultureInfo("de-DE");
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
